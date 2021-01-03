@@ -1,4 +1,4 @@
-# Qt-IV-Plotter
+# Rodriguez
 
 A PyQt5 and Python program to make diode and transistor IV plots using an Arduino as the electrical interface.
 
