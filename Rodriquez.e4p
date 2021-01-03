@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Project SYSTEM "Project-5.1.dtd">
-<!-- eric project file for project IVTracer -->
-<!-- Saved: 2020-12-12, 22:20:15 -->
-<!-- Copyright (C) 2020 Joseph Eoff,  -->
+<!-- eric project file for project Rodriquez -->
+<!-- Saved: 2021-01-03, 20:05:44 -->
+<!-- Copyright (C) 2021 Joseph Eoff,  -->
 <Project version="5.1">
   <Language>en_US</Language>
   <Hash>dd2a4682db1614911e675b3c555b364a263115ee</Hash>
@@ -13,7 +13,6 @@
   <Email></Email>
   <Eol index="0"/>
   <Sources>
-    <Source>rodriguez.py</Source>
     <Source>__init__.py</Source>
     <Source>forms/IVTrace.py</Source>
     <Source>forms/IVTracer.py</Source>
@@ -24,10 +23,14 @@
     <Source>forms/Ui_plotter.py</Source>
     <Source>forms/deviceTypes.py</Source>
     <Source>forms/mainWindow.py</Source>
+    <Source>rodriguez.py</Source>
   </Sources>
   <Forms>
     <Form>forms/main.ui</Form>
   </Forms>
+  <Others>
+    <Other>.gitignore</Other>
+  </Others>
   <MainScript>rodriguez.py</MainScript>
   <Vcs>
     <VcsType>Git</VcsType>
