@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Project SYSTEM "Project-5.1.dtd">
 <!-- eric project file for project Rodriquez -->
-<!-- Saved: 2021-01-03, 20:05:44 -->
+<!-- Saved: 2021-02-11, 21:55:38 -->
 <!-- Copyright (C) 2021 Joseph Eoff,  -->
 <Project version="5.1">
   <Language>en_US</Language>
@@ -13,6 +13,7 @@
   <Email></Email>
   <Eol index="0"/>
   <Sources>
+    <Source>Rodriguez_rc.py</Source>
     <Source>__init__.py</Source>
     <Source>forms/IVTrace.py</Source>
     <Source>forms/IVTracer.py</Source>
@@ -28,6 +29,9 @@
   <Forms>
     <Form>forms/main.ui</Form>
   </Forms>
+  <Resources>
+    <Resource>Rodriguez.qrc</Resource>
+  </Resources>
   <Others>
     <Other>.gitignore</Other>
   </Others>
