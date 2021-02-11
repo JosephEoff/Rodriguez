@@ -1,0 +1,7 @@
+<RCC>
+  <qresource prefix="icons">
+    <file>forms/icons/IV.png</file>
+    <file>forms/icons/dark.png</file>
+    <file>forms/icons/light.png</file>
+  </qresource>
+</RCC>

@@ -33,4 +33,4 @@ class IVTracer_Collector(object):
     def getBaseCurrentForTrace(self,  traceNumber):
         if traceNumber in self.traces:
             baseCurrent = self.traces[traceNumber].baseCurrent
-            return "{:10.3f}".format(baseCurrent*1000 ) + "mA"
+            return "{:10.2f}".format(baseCurrent*1000000 ) + "µA"

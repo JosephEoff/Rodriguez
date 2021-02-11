@@ -24,7 +24,7 @@ class IVTrace(object):
         self.values.append(IVTracer_value)
         self.NPN.append([IVTracer_value.NPN_VCollector, IVTracer_value.NPN_ICollector])
         self.PNP.append([IVTracer_value.PNP_VCollector, IVTracer_value.PNP_ICollector])
-        self.Diode.append([IVTracer_value.VBase , IVTracer_value.IBase ])
+        self.Diode.append([IVTracer_value.NPN_VCollector , IVTracer_value.NPN_ICollector])
     
     def getPlotData(self):
         if self.deviceType == deviceTypes.Diode:

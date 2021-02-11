@@ -20,7 +20,7 @@ class mainWindow(Ui_MainWindow):
         self.show_Stopped()
         self.collector = IVTracer_Collector(deviceTypes.Diode, "")
         self.currentPlotNumber = -1
-        self.plotterView.setBackground('w')
+        self.plotterView.setBackground('k')
         self.plotterView.addLegend(offset = (-1, 1))
         self.plotterView.getPlotItem().setLabel('left',"ICollector",  units = "A")
         self.plotterView.getPlotItem().setLabel('bottom' ,  "VCollector",  units = "V")   
@@ -34,10 +34,21 @@ class mainWindow(Ui_MainWindow):
         itemIndex =  self.comboBox_ComPort.findText(comport)
         if itemIndex>=0:
             self.comboBox_ComPort.setCurrentIndex(itemIndex)
+            
+        if self.settings.contains('R_base'):
+            self.spinBox_R_base.setValue(self.settings.value('R_base', type=int))
+        if self.settings.contains('R_collector'):
+            self.spinBox_R_collector.setValue(self.settings.value('R_collector', type=int))
+        if self.settings.contains('V_ref'):
+            self.doubleSpinBox_V_ref.setValue(self.settings.value('V_ref', type=float))
+        
     
     def saveSettings(self):
         self.settings.setValue('ComPort', self.comboBox_ComPort.currentText())
-    
+        self.settings.setValue('R_base',  self.spinBox_R_base.value())
+        self.settings.setValue('R_collector',  self.spinBox_R_collector.value())
+        self.settings.setValue('V_ref', self.doubleSpinBox_V_ref.value())
+         
     def mouseMoved(self,evt):
         pos = evt
         if self.plotterView.sceneBoundingRect().contains(pos):
@@ -74,7 +85,15 @@ class mainWindow(Ui_MainWindow):
     def connectButtonEvents(self):
         self.pushButtonRun.clicked.connect(self.on_ButtonRunClicked)
         self.pushButtonStop.clicked.connect(self.on_ButtonStopClicked)
-        
+        self.toolButtonDarkBackground.clicked.connect(self.on_toolButtonDarkBackgroundClicked)
+        self.toolButtonLightBackground.clicked.connect(self.on_toolButtonLightBackgroundClicked)
+
+    def  on_toolButtonLightBackgroundClicked(self):
+        self.plotterView.setBackground('w')
+    
+    def on_toolButtonDarkBackgroundClicked(self):
+        self.plotterView.setBackground('k')
+    
     def on_ButtonRunClicked(self):
         if not self.tracer is None:
             return
@@ -83,7 +102,7 @@ class mainWindow(Ui_MainWindow):
         self.show_Running()
         self.plotterView.clear()
         self.plotterView.getPlotItem().legend.clear()
-        self.collector =  IVTracer_Collector(self.comboBox_DeviceType.currentData(), self.lineEditDeviceName.text() )
+        self.collector =  IVTracer_Collector(self.comboBox_DeviceType.currentData(), self.lineEditDeviceName.text())
         if self.comboBox_DeviceType.currentData() == deviceTypes.Diode:
             self.plotterView.getPlotItem().setLabel('left',"I_forward",  units = "A")
             self.plotterView.getPlotItem().setLabel('bottom' ,  "V_forward",  units = "V")    
@@ -91,7 +110,7 @@ class mainWindow(Ui_MainWindow):
             self.plotterView.getPlotItem().setLabel('left',"ICollector",  units = "A")
             self.plotterView.getPlotItem().setLabel('bottom' ,  "VCollector",  units = "V")    
               
-        self.tracer = IVTracer(self.comboBox_ComPort.currentText(),  self.comboBox_DeviceType.currentData(), self.doubleSpinBoxMinimumBaseCurrent.value()/1000,  self.spinBoxTraceCount.value())
+        self.tracer = IVTracer(self.comboBox_ComPort.currentText(),  self.comboBox_DeviceType.currentData(),  self.spinBoxTraceCount.value(),  self.spinBox_R_base.value(),  self.spinBox_R_collector.value(),  self.doubleSpinBox_V_ref.value())
         self.tracer.signals.Error.connect(self.on_TracerError)
         self.tracer.signals.Finished.connect(self.on_TracerFinished)
         self.tracer.signals.Value.connect(self.on_TracerValue)

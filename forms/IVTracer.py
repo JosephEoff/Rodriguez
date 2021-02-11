@@ -8,13 +8,13 @@ from  forms.deviceTypes import deviceTypes
 
 class IVTracer(QRunnable):
     maximumCount = 1023
-    R_base = float(1000.0)
+    R_base = float(3300.0)
     R_collector = float(1000.0)
     V_ref = float(5.0)
     Oversampling = int(256)
-    BaseCurrentSamplingCount = int(64)
+    BaseCurrentSamplingCount = int(256)
     
-    def __init__(self, comport,  deviceType,  minimumCurrent_amperes, numberOfPlots ):
+    def __init__(self, comport,  deviceType, numberOfPlots,  R_base,  R_collector,  V_ref ):
         super(IVTracer, self).__init__()
         self.comport = comport
         self.serialport = None
@@ -22,8 +22,11 @@ class IVTracer(QRunnable):
         self.signals = IVTracer_Signals()
         self.deviceType = deviceTypes.Diode
         self.deviceType  = deviceType
-        self.minimumCurrent_amperes = minimumCurrent_amperes
+
         self.numberOfPlots = numberOfPlots
+        self.R_base = R_base
+        self.R_collector = R_collector
+        self.V_ref = V_ref
 
     @pyqtSlot()
     def run(self):
@@ -58,31 +61,26 @@ class IVTracer(QRunnable):
             if not self.keepRunning:
                 break
             value = IVTracer_Value()
-            self.serialport.write((str(counter)+"B"+chr(13)).encode())
+            self.serialport.write((str(counter)+"C"+chr(13)).encode())
             valuestring = self.readFromSerialPort()
             stringvalues = valuestring.split(('\t').encode())
-           
             value.V_Intended = counter/self.maximumCount * self.V_ref
-            value.VBias = (float(stringvalues[0])/self.maximumCount) * self.V_ref / self.Oversampling
-            value.VBase = (float(stringvalues[1])/self.maximumCount) * self.V_ref /self.Oversampling
             value.NPN_VCollector = (float(stringvalues[2])/self.maximumCount) * self.V_ref / self.Oversampling
-            value.IBase = ((value.VBias-value.VBase)/self.R_base) 
-            
+            value.NPN_VCollectorBias = (float(stringvalues[3])/self.maximumCount) * self.V_ref / self.Oversampling
+            value.NPN_ICollector = ((value.NPN_VCollectorBias-value.NPN_VCollector)/self.R_collector) 
+
             self.signals.Value.emit(value,  0)
 
     def traceNPNTransistor(self):
         #Set the output to zero volts.  Read and discard the first values.
         self.serialport.write(("0B"+chr(13)).encode())
         valuestring = self.readFromSerialPort()
-        self.serialport.write(("0C"+chr(13)).encode())
+        self.serialport.write((str(self.maximumCount) + "C"+chr(13)).encode())
         valuestring = self.readFromSerialPort()
-        minimumCount= self.determineNPNBaseCurrentMinimumCount()        
-        stepSize = int((self.maximumCount - minimumCount)/(self.numberOfPlots))
-        if stepSize<1:
-            raise Exception("Cannot reach the given number of steps.","Either too many steps or the minimum current is too high.")
+        stepSize = int(self.maximumCount/self.numberOfPlots)
         
         count = 0
-        for counter in range(minimumCount + stepSize  ,self.maximumCount,  stepSize):
+        for counter in range(stepSize  ,self.maximumCount,  stepSize):
             if not self.keepRunning:
                 break
             value = IVTracer_Value()
@@ -115,14 +113,12 @@ class IVTracer(QRunnable):
         valuestring = self.readFromSerialPort()
         self.serialport.write((str(self.maximumCount) +"C"+chr(13)).encode())
         valuestring = self.readFromSerialPort()
-        minimumCurrentCount = self.determinePNPBaseCurrentMaximumCount()        
-        stepSize = int( minimumCurrentCount/(self.numberOfPlots))
-        if stepSize<1:
-            raise Exception("Cannot reach the given number of steps.","Either too many steps or the minimum current is too high.")
-        
+              
+        stepSize = int(self.maximumCount/(self.numberOfPlots))
+
         count = 0
         stepSize = -1 * stepSize
-        for counter in range( minimumCurrentCount , 0,  stepSize ):
+        for counter in range( self.maximumCount + stepSize , 0,  stepSize ):
             if not self.keepRunning:
                 break
             value = IVTracer_Value()
@@ -150,23 +146,15 @@ class IVTracer(QRunnable):
                 value.PNP_VCollector = self.V_ref - value.PNP_VCollector
                 self.signals.Value.emit(value,  count)
             count = count +1
-    
-    def determineNPNBaseCurrentMinimumCount(self):
-        for counter in range(0 , self.maximumCount):
-            if not self.keepRunning:
-                break
-            IBase = self.getBaseCurrent(counter)
-            if IBase >= self.minimumCurrent_amperes:
-                return counter
         
-        raise Exception("Could not reach minimum base current.","Is there a device connected?")
-    
     def getBaseCurrent(self, DACount):
-        collectorCounts = int(self.maximumCount/2)
+        collectorCounts = int(self.maximumCount/6)
         self.serialport.write((str(collectorCounts)+"C"+chr(13)).encode())
         valuestring = self.readFromSerialPort()
         IBase = 0.0
         for count in range (0, self.BaseCurrentSamplingCount):
+            if not self.keepRunning:
+                break
             self.serialport.write((str(DACount)+"B"+chr(13)).encode())
             valuestring = self.readFromSerialPort()
             stringvalues = valuestring.split(('\t').encode())    
@@ -174,16 +162,7 @@ class IVTracer(QRunnable):
             VBase = (float(stringvalues[1])/self.maximumCount) * self.V_ref / self.Oversampling
             IBase = IBase + math.fabs((VBias-VBase)/self.R_base) 
         return IBase/self.BaseCurrentSamplingCount
-            
-    def determinePNPBaseCurrentMaximumCount(self):
-        for counter in range( self.maximumCount,  0,  -1):
-            if not self.keepRunning:
-                break
-            IBase = self.getBaseCurrent(counter)
-            if IBase >= self.minimumCurrent_amperes:
-                return counter
-        
-        raise Exception("Could not reach minimum base current.","Is there a device connected?")
+
 
     def readFromSerialPort(self):
         valuestring = self.serialport.readline()
