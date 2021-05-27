@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="icons">
+    <file>icons/Rodriguez.png</file>
     <file>forms/icons/IV.png</file>
     <file>forms/icons/dark.png</file>
     <file>forms/icons/light.png</file>

@@ -1,0 +1,88 @@
+name: Build
+
+on:
+  push:
+    tags:
+      - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
+
+jobs:
+
+  createrelease:
+    name: Create Release
+    runs-on: [ubuntu-latest]
+    steps:
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: $
+      with:
+        tag_name: $
+        release_name: Release $
+        draft: false
+        prerelease: false
+    - name: Output Release URL File
+      run: echo "$" > release_url.txt
+    - name: Save Release URL File for publish
+      uses: actions/upload-artifact@v1
+      with:
+        name: release_url
+        path: release_url.txt
+
+  build:
+    name: Build packages
+    needs: createrelease
+    runs-on: $
+    strategy:
+      matrix:
+        include:
+          - os: macos-latest
+            TARGET: macos
+            CMD_BUILD: >
+                pyinstaller -F -w -n Rodriguez -i icons/mac/Rodriguez.icns rodriguez.py &&
+                cd dist/ &&
+                zip -r9 Rodriguez Rodriguez.app/
+            OUT_FILE_NAME: Rodriguez.zip
+            ASSET_MIME: application/zip
+          - os: windows-latest
+            TARGET: windows
+            CMD_BUILD: pyinstaller -F -w -n Rodriguez -i icons/windows/Rodriguez-Icon.ico rodriguez.py
+            OUT_FILE_NAME: Rodriguez.exe
+            ASSET_MIME: application/vnd.microsoft.portable-executable
+          - os: ubuntu-18.04
+            TARGET: ubuntu
+            CMD_BUILD: pyinstaller -F -w -n Rodriguez rodriguez.py
+            OUT_FILE_NAME: Rodriguez
+            ASSET_MIME: application/x-sharedlib
+    steps:
+    - uses: actions/checkout@v1
+    - name: Set up Python 3.7
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.7
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    - name: Build with pyinstaller for $
+      run: $
+    - name: Load Release URL File from release job
+      uses: actions/download-artifact@v1
+      with:
+        name: release_url
+    - name: Get Release File Name & Upload URL
+      id: get_release_info
+      shell: bash
+      run: |
+        value=`cat release_url/release_url.txt`
+        echo ::set-output name=upload_url::$value
+    - name: Upload Release Asset
+      id: upload-release-asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: $
+      with:
+        upload_url: $
+        asset_path: ./dist/$
+        asset_name: $
+        asset_content_type: $ 

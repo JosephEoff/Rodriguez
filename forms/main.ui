@@ -15,7 +15,7 @@
   </property>
   <property name="windowIcon">
    <iconset resource="../Rodriguez.qrc">
-    <normaloff>:/icons/forms/icons/IV.png</normaloff>:/icons/forms/icons/IV.png</iconset>
+    <normaloff>:/icons/icons/Rodriguez.png</normaloff>:/icons/icons/Rodriguez.png</iconset>
   </property>
   <property name="animated">
    <bool>false</bool>
