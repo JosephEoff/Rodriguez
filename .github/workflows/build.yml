@@ -15,14 +15,14 @@ jobs:
       id: create_release
       uses: actions/create-release@v1
       env:
-        GITHUB_TOKEN: $
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: $
-        release_name: Release $
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref }}
         draft: false
         prerelease: false
     - name: Output Release URL File
-      run: echo "$" > release_url.txt
+      run: echo "${{ steps.create_release.outputs.upload_url }}" > release_url.txt
     - name: Save Release URL File for publish
       uses: actions/upload-artifact@v1
       with:
@@ -32,7 +32,7 @@ jobs:
   build:
     name: Build packages
     needs: createrelease
-    runs-on: $
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         include:
@@ -64,8 +64,8 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-    - name: Build with pyinstaller for $
-      run: $
+    - name: Build with pyinstaller for ${{matrix.TARGET}}
+      run: ${{matrix.CMD_BUILD}}
     - name: Load Release URL File from release job
       uses: actions/download-artifact@v1
       with:
@@ -80,9 +80,9 @@ jobs:
       id: upload-release-asset
       uses: actions/upload-release-asset@v1
       env:
-        GITHUB_TOKEN: $
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        upload_url: $
-        asset_path: ./dist/$
-        asset_name: $
-        asset_content_type: $ 
+        upload_url: ${{ steps.get_release_info.outputs.upload_url }}
+        asset_path: ./dist/${{ matrix.OUT_FILE_NAME}}
+        asset_name: ${{ matrix.OUT_FILE_NAME}}
+        asset_content_type: ${{ matrix.ASSET_MIME}} 
