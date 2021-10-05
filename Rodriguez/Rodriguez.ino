@@ -89,8 +89,8 @@ void makeMeasurementsAndSendMessage(){
     while (counter--){
       VBias = VBias + analogRead(A0);
       VBase = VBase + analogRead(A1);
-      VCollector = VCollector + analogRead(A2);
-      VCollectorBias = VCollectorBias + analogRead(A3);
+      VCollector = VCollector + analogRead(A3);
+      VCollectorBias = VCollectorBias + analogRead(A2);
     }
     Serial.println(String(VBias) + "\t" + String(VBase) + "\t" + String(VCollector) + "\t" + String(VCollectorBias));    
 }
